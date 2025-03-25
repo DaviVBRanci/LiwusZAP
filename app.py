@@ -3456,11 +3456,18 @@ def handle_typing(data):
         'status': status
     }, room=receiver)
 
+import os
+
+if __name__ == '__main__':
     # Create default profile pic if it doesn't exist
-default_pic_path = os.path.join(app.config['UPLOAD_FOLDER'], 'default.png')
-if not os.path.exists(default_pic_path):
+    default_pic_path = os.path.join(app.config['UPLOAD_FOLDER'], 'default.png')
+    if not os.path.exists(default_pic_path):
         # Ensure the default profile pic exists
         with open(default_pic_path, 'wb') as f:
-            f.write(b'\x89PNG\r\n\x1a\n...')
-    
+            f.write(b'\x89PNG\r\n\x1a\n...')  # Insira aqui os bytes reais do PNG
+
+    # Definir a porta corretamente para o Render
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+
 
