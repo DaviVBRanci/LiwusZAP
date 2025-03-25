@@ -3459,3 +3459,12 @@ def handle_typing(data):
 if __name__ == '__main__':
     # Create default profile pic if it doesn't exist
     default_pic_path = os.path.join(app.config['UPLOAD_FOLDER'], 'default.png')
+
+    if not os.path.exists(default_pic_path):
+        # Ensure the default profile pic exists
+        with open(default_pic_path, 'wb') as f:
+            f.write(b'\x89PNG\r\n\x1a\n...')
+    
+    # Run the app on the host and port defined by the environment
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
+
