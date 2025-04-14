@@ -19,6 +19,7 @@ import time
 import hashlib
 import sys
 import json
+from plyer import notification
 from pywebpush import webpush, WebPushException
 import flask_dance
 import emoji
@@ -3589,6 +3590,20 @@ def save_groups(groups):
         print(f'Erro ao salvar grupos: {e}')
 
 
+def calculate_call_duration(caller):
+    """Calcula a duração da chamada para o chamador especificado."""
+    if caller not in call_start_times:
+        call_start_times[caller] = (
+            datetime.now()
+        )  # Armazena o horário de início
+
+    # Calcule a duração
+    start_time = call_start_times.pop(caller, None)
+    if start_time:
+        duration = datetime.now() - start_time
+        return str(duration)  # Retorna a duração como string
+    return '00:00:00'
+
 
 @app.route('/call_history')
 def call_history():
@@ -3743,8 +3758,20 @@ def handle_end_call(data):
     if not sender or not target:
         return
 
+    # Calcule a duração da chamada apenas com o chamador
+    duration = calculate_call_duration(sender)  # Passa apenas o 'sender'
 
+    # Crie um registro de chamada
+    call_record = {
+        'caller': sender,
+        'receiver': target,
+        'start_time': datetime.now().isoformat(),  # Hora de início
+        'duration': duration,
+        'answered': data.get('answered', False),  # Se a chamada foi atendida
+    }
 
+    # Salve o registro de chamada
+    save_call_history(call_record)
 
     # Notifique o destinatário que a chamada foi encerrada
     emit('call_ended', {'sender': sender}, room=target)
@@ -4054,6 +4081,14 @@ def chat(contact):
                 read_status = '✔️' if message['read'] else '✖️'
                 message['timestamp'] = (
                     f'{message["timestamp"]}, visto por: {contact if message["read"] else "não visto"}'
+                )
+
+            # Notificação para Windows
+            if contact_status == 'offline':
+                notification.notify(
+                    title='Contato Offline',
+                    message=f'{contact} está offline. Sua mensagem será entregue quando ele estiver online.',
+                    app_name='Messaging App',
                 )
 
             return render_template_string(
