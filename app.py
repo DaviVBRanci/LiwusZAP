@@ -19,7 +19,6 @@ import time
 import hashlib
 import sys
 import json
-from plyer import notification
 from pywebpush import webpush, WebPushException
 import flask_dance
 import emoji
@@ -4083,13 +4082,7 @@ def chat(contact):
                     f'{message["timestamp"]}, visto por: {contact if message["read"] else "não visto"}'
                 )
 
-            # Notificação para Windows
-            if contact_status == 'offline':
-                notification.notify(
-                    title='Contato Offline',
-                    message=f'{contact} está offline. Sua mensagem será entregue quando ele estiver online.',
-                    app_name='Messaging App',
-                )
+          
 
             return render_template_string(
                 CHAT_TEMPLATE
